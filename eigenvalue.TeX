@@ -1,0 +1,226 @@
+\documentclass{article}
+
+\usepackage[english]{babel}
+
+\usepackage[letterpaper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+
+% Useful packages
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+
+\title{Eigenvalues and Eigenvectors}
+\author{Peter Zhao}
+
+\begin{document}
+\date{}
+\maketitle
+
+\section*{Acknowledgments}
+I will be using various references pulled from different textbooks for a complete guide/notes to Eigenvalues. Here are some main textbooks of interest: 
+
+\begin{itemize}
+\item Gilbert Strang, \textit{Linear Algebra and Its Applications}, 4th Edition, MIT Press.
+
+\item David C. Lay, Steven R. Lay, and Judi J. McDonald,
+\textit{Linear Algebra and Its Applications}, 5th Edition,
+Pearson, 2016.
+
+\item Stephen H. Friedberg, Arnold J. Insel, and Lawrence E. Spence.
+\textit{Linear Algebra}. 4th Edition. Pearson, 2003.
+
+
+\end{itemize}
+
+\section{Introduction}
+\subsection{Background}
+The topic of eigenvalues and eigenvectors is often taught in a way that feels abstract. 
+I feel like students are usually given formulas and procedures without first understanding why these
+objects are useful.
+
+Eigenvalues arise when studying linear transformations. A linear transformation is a rule/function
+that changes vectors in a space while preserving straight lines and the origin. Geometrically,
+this transformation can stretch, compress, rotate, or shear the space.
+
+To describe positions in a vector space, we use a set of vectors called a basis. A basis is
+a collection of vectors that allows us to express every vector in the space as a linear
+combination of those basis vectors.
+
+When a matrix transformation acts on most vectors, it both changes their length and rotates
+their direction. However, there are sometimes special vectors whose direction does not
+change under the transformation. These vectors may only be stretched or compressed.
+
+Such vectors are called eigenvectors.
+
+The amount by which the transformation stretches or compresses an eigenvector is called
+the eigenvalue.
+
+Therefore, the eigenvalue problem asks us to find the vectors whose direction is preserved
+by a linear transformation and determine how much those vectors are scaled.
+Geometrically, eigenvectors are directions in space that remain unchanged by the transformation; only their length is scaled.
+
+\subsection{Eigenvalue Problem Across Disciplines}
+
+The eigenvalue problem appears in many areas of science and mathematics
+and may be written using different notations:
+
+\[
+Av = \lambda v
+\]
+
+\[
+T(v) = \lambda v
+\]
+
+\[
+A|v\rangle = \lambda |v\rangle
+\]
+
+\[
+(A - \lambda I)v = 0
+\]
+
+\[
+\mathcal{L} f = \lambda f
+\]
+
+They all represent the same eigenvalue problem. 
+Usually, we first encounter this concept in linear algebra written in matrix form as
+
+\[
+A\mathbf{v} = \lambda \mathbf{v}.
+\]
+
+Here $A$ is a square matrix, $\mathbf{v}$ is a nonzero vector called an eigenvector,
+and $\lambda$ is the corresponding eigenvalue.
+
+But interestingly, the eigenvalue problem does not only have to be in matrix form.
+More generally, it appears when anything "linear".
+
+For example, consider the differential linear operator
+
+\[
+\frac{d}{dt}.
+\]
+
+If we apply this operator to the function $e^{t}$, we obtain
+
+\[
+\frac{d}{dt} e^{t} = e^{t}.
+\]
+
+This can be interpreted as an eigenvalue problem:
+
+\[
+\frac{d}{dt} e^{t} = 1 \cdot e^{t}.
+\]
+
+Here $e^{t}$ plays the role of an eigenfunction, and the eigenvalue is $\lambda = 1$.
+
+\subsection{A Simple Graph Ranking Example}
+
+Before studying the mathematical theory in detail or solving it I feel it is helpful to
+see an example of how eigenvalues appear in a real algorithm.
+
+
+For example, a graph can be used to represent many systems in computer science,
+such as webpages and hyperlinks.
+
+Suppose each node in a graph represents a webpage, and a directed edge
+represents a link from one page to another. The idea behind ranking
+algorithms such as PageRank is that a page is important if important
+pages link to it.
+
+We begin by assigning every page the same score. Then we repeatedly
+update the scores according to the links in the graph.
+
+For example, consider three pages:
+
+\begin{itemize}
+\item Page $0$ links to Page $1$
+\item Page $1$ links to Page $2$
+\item Page $2$ links to Page $0$ and Page $1$
+\end{itemize}
+
+This structure can be represented by the adjacency matrix
+
+\[
+A =
+\begin{bmatrix}
+0 & 1 & 0 \\
+0 & 0 & 1 \\
+1 & 1 & 0
+\end{bmatrix}
+\]
+
+Each row represents outgoing links from a page.
+
+We start with an initial score vector
+
+\[
+\mathbf{s}_0 =
+\begin{bmatrix}
+1 \\
+1 \\
+1
+\end{bmatrix}.
+\]
+
+At each step, the score of a page is distributed equally to the
+pages it links to. After repeating this update many times, the
+scores begin to stabilize.
+
+The resulting stable score vector satisfies an equation of the form
+
+\[
+A\mathbf{s} = \lambda \mathbf{s}.
+\]
+
+This means that the final ranking vector $\mathbf{s}$ behaves like
+an eigenvector of the matrix describing the graph.
+
+Thus eigenvalues and eigenvectors help describe the long-term behavior
+of ranking algorithms used in computer science.
+
+If this example feels confusing, that is okay! The goal is to show that eigenvalues already appear in practical algorithms used in useful applications.
+
+\section{Solving the Eigenvalue Problem}
+
+Now that we understand what eigenvalues and eigenvectors represent,
+we would like to compute them.
+
+Recall the eigenvalue equation
+
+\[
+A\mathbf{v} = \lambda \mathbf{v}.
+\]
+
+We can rewrite this equation as
+
+\[
+A\mathbf{v} - \lambda \mathbf{v} = 0.
+\]
+
+Factoring out the vector $\mathbf{v}$ gives
+
+\[
+(A - \lambda I)\mathbf{v} = 0.
+\]
+
+Notice that $\lambda \mathbf{v}$ is equivalent to multiplying the vector
+$\mathbf{v}$ by the scalar $\lambda$. In order to subtract this term from
+$A\mathbf{v}$ using matrix notation, we introduce the identity matrix $I$. 
+must be singular. Therefore we require
+
+\[
+\det(A - \lambda I) = 0.
+\]
+
+This equation is called the \textbf{characteristic equation}.
+Solving this equation gives the eigenvalues of the matrix.
+
+
+
+
+
+\end{document}
